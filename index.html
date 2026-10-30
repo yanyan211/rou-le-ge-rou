@@ -52,18 +52,22 @@ body{
 .bar .left{font-variant-numeric:tabular-nums;color:var(--wood-dark)}
 .sound{background:none;border:1.5px solid var(--wood-dark);color:var(--wood-dark);border-radius:999px;font:12px var(--body);padding:1px 8px;cursor:pointer}
 
-.tile{position:absolute;width:45px;height:47px;box-sizing:border-box;border-radius:9px;
+.tile{position:absolute;left:0;top:0;width:45px;height:47px;cursor:pointer;will-change:transform;
+  transition:transform .2s cubic-bezier(.25,.8,.35,1)}
+.tile .face{position:absolute;inset:0;box-sizing:border-box;border-radius:9px;
   background:var(--tile);border:1.5px solid var(--wood-dark);
   box-shadow:0 4px 0 var(--tile-edge),0 5px 0 1.5px var(--wood-dark);
-  display:grid;place-items:center;cursor:pointer;
-  transition:left .24s ease,top .24s ease,transform .22s ease,opacity .22s ease,background-color .15s}
+  display:grid;place-items:center;transition:background-color .15s}
 .tile .e{font-size:28px;line-height:1;pointer-events:none;transition:opacity .15s,filter .15s}
 .tile img.e{position:absolute;inset:0;width:100%;height:100%;border-radius:7.5px;object-fit:cover;display:block}
-.tile.blocked{background:var(--shade);cursor:default}
+.tile.blocked{cursor:default}
+.tile.blocked .face{background:var(--shade)}
 .tile.blocked .e{opacity:.42;filter:grayscale(.7)}
 .tile.blocked img.e{opacity:1;filter:brightness(.4) grayscale(.6)}
-.tile.pop{transform:scale(.1) rotate(25deg);opacity:0}
-.tile.wiggle{animation:wig .4s ease}
+.tile.pop{pointer-events:none}
+.tile.pop .face{animation:pop .34s ease-in forwards}
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.2);filter:brightness(1.15)}55%{transform:scale(1.12)}100%{transform:scale(0);opacity:0}}
+.tile.wiggle .face{animation:wig .4s ease}
 @keyframes wig{30%{transform:rotate(-12deg) scale(.9)}70%{transform:rotate(10deg) scale(1.05)}}
 
 .slotbox{position:absolute;left:12px;top:596px;width:336px;height:64px;box-sizing:border-box;border-radius:12px;
@@ -88,7 +92,11 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   padding:8px 16px;border-radius:999px;font-size:14px;z-index:9000;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 
-.veil{position:absolute;inset:0;background:var(--veil);z-index:8000;display:grid;place-items:center}
+.veil{position:fixed;inset:0;background:var(--veil);z-index:8000;display:grid;place-items:center;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}}
+.veil .card{transform:scale(var(--s,1))}
+.veil .card.show{animation:popin .34s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes popin{from{transform:scale(calc(var(--s,1)*.6));opacity:0}to{transform:scale(var(--s,1));opacity:1}}
 .card{width:290px;box-sizing:border-box;background:var(--tile);border:3px solid var(--wood-dark);border-radius:18px;
   box-shadow:0 6px 0 var(--wood-dark);padding:22px 20px 20px;text-align:center}
 .card h2{margin:0 0 8px;font:400 34px/1.1 var(--display);color:var(--accent);text-wrap:balance}
@@ -110,7 +118,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .card .count{display:inline-block;margin:2px 0 8px;padding:3px 12px;border-radius:999px;background:var(--cat-light);color:var(--wood-dark);font-size:13px}
 .card .count b{font-family:var(--display);font-weight:400;font-size:16px;color:var(--accent)}
 
-@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile.wiggle{animation:none}}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile.wiggle .face,.veil,.veil .card.show{animation:none}.tile.pop .face{animation-duration:.01s}}
 </style>
 
 <div id="wrap"><div id="stage">
@@ -129,8 +137,8 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <button class="prop" id="pShuffle" type="button">洗牌<i>×1</i></button>
   </div>
   <div class="toast" id="toast"></div>
-  <div class="veil" id="veil" hidden><div class="card" id="card"></div></div>
 </div></div>
+<div class="veil" id="veil" hidden><div class="card" id="card"></div></div>
 
 <script>
 /* ========= 可自定义区域 =========
@@ -143,7 +151,7 @@ const CONFIG = {
   slotSize: 7,
   // 通关人数统计接口（Cloudflare Worker + D1）。填 Worker 地址，例如 'https://rou-stats.xxx.workers.dev'；
   // 和游戏部署在同一个域名下时填 ''；留 null 则不联网，人数显示为 --
-  statsApi: null,
+  statsApi: 'https://rou-stats.13336038692.workers.dev',
   firstIssueDate: '2026-10-30'   // 第 1 期的日期
 };
 const LEVELS = [
@@ -298,7 +306,7 @@ function beep(freqs,dur=.09,type='triangle',vol=.08){
 
 // ---------- 游戏状态 ----------
 let G=null;
-function faceHTML(type){const v=CONFIG.tiles[type];return /^(data:|https?:|\.?\/)/.test(v)?`<img class="e" src="${v}" alt="">`:`<span class="e">${v}</span>`}
+function faceHTML(type){const v=CONFIG.tiles[type];return '<div class="face">'+(/^(data:|https?:|\.?\/)/.test(v)?`<img class="e" src="${v}" alt="">`:`<span class="e">${v}</span>`)+'</div>'}
 
 function startLevel(li){
   closeOverlay();
@@ -306,7 +314,7 @@ function startLevel(li){
   const host=$('tiles');host.innerHTML='';
   const tiles=buildLevel(li).map((o,i)=>({...o,id:i,state:'field'}));
   tiles.forEach(t=>{
-    const el=document.createElement('div');el.className='tile';el.innerHTML=faceHTML(t.type);
+    const el=document.createElement('div');el.className='tile';el.innerHTML=faceHTML(t.type);el.style.transform=`translate3d(${t.x}px,${t.y}px,0)`;
     el.addEventListener('click',()=>onTile(t));t.el=el;host.appendChild(el);
   });
   G={li,tiles,slot:[],history:[],props:{out:1,undo:1,shuffle:1},revived:false,busy:false,over:false,hold:0,total:tiles.length};
@@ -323,9 +331,9 @@ function render(){
   for(const t of G.tiles){
     if(t.state==='gone')continue;
     const s=t.el.style;
-    if(t.state==='field'){s.left=t.x+'px';s.top=t.y+'px';s.zIndex=(t.zone==='hold'?600:10)+t.z;t.el.classList.toggle('blocked',!isFree(t))}
+    if(t.state==='field'){s.transform=`translate3d(${t.x}px,${t.y}px,0)`;s.zIndex=(t.zone==='hold'?600:10)+t.z;t.el.classList.toggle('blocked',!isFree(t))}
   }
-  G.slot.forEach((t,i)=>{const s=t.el.style;s.left=(SLOT_X+i*TW)+'px';s.top=SLOT_Y+'px';s.zIndex=3000+i;t.el.classList.remove('blocked')});
+  G.slot.forEach((t,i)=>{const s=t.el.style;s.transform=`translate3d(${SLOT_X+i*TW}px,${SLOT_Y}px,0)`;s.zIndex=3000+i;t.el.classList.remove('blocked')});
   const left=G.tiles.filter(t=>t.state!=='gone').length;
   $('slotbox').classList.toggle('danger',G.slot.length>=CONFIG.slotSize-1);
   $('holdhint').hidden=G.tiles.some(t=>t.zone==='hold'&&t.state==='field');
@@ -345,12 +353,12 @@ function onTile(t){
   if(same.length>=3){
     G.busy=true;
     setTimeout(()=>{
-      same.slice(0,3).forEach(o=>{o.state='gone';o.el.classList.add('pop');setTimeout(()=>o.el.remove(),260)});
+      same.slice(0,3).forEach(o=>{o.state='gone';o.el.classList.add('pop');setTimeout(()=>o.el.remove(),380)});
       G.slot=G.slot.filter(o=>o.state==='slot');
       beep([660,880,1100],.12,'sine',.07);
       G.busy=false;render();
-      if(G.tiles.every(o=>o.state==='gone'))win();
-    },260);
+      if(G.tiles.every(o=>o.state==='gone'))setTimeout(win,300);
+    },200);
   }else if(G.slot.length>=CONFIG.slotSize){
     G.over=true;setTimeout(lose,380);
   }
@@ -404,6 +412,7 @@ function overlay(html,buttons){
   const box=card.querySelector('.btns');
   buttons.forEach(b=>{const el=document.createElement('button');el.type='button';el.className='btn'+(b.primary?' primary':'');el.textContent=b.label;el.onclick=b.onClick;box.appendChild(el)});
   $('veil').hidden=false;
+  card.classList.remove('show');void card.offsetWidth;card.classList.add('show');
   clearInterval(tickTimer);
   const cd=card.querySelector('[data-countdown]');
   if(cd)tickTimer=setInterval(()=>{cd.textContent=untilMidnight();if(todayKey()!==shownDay)location.reload()},1000);
@@ -456,6 +465,7 @@ function fit(){
   const s=Math.max(.3,Math.min(w/360,h/720,1.6));
   $('wrap').style.width=360*s+'px';$('wrap').style.height=720*s+'px';
   $('stage').style.transform=`scale(${s})`;
+  document.documentElement.style.setProperty('--s',s);
 }
 addEventListener('resize',fit);
 $('title').textContent=CONFIG.title;
