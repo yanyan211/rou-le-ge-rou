@@ -434,7 +434,7 @@ function lose(){
 function win(){
   beep([523,659,784,1046],.18,'sine',.08);
   if(G.li===0){
-    overlay(`<div class="big-emoji">🍖</div><h2>热身完成</h2><p>下面是今天的地狱关：${dailyLevel().length} 张牌、16 种图案。</p><p class="meta">每关都经过求解器验证有解，但看到三张一样就消的打法基本必死。正解要一直把槽位压在 5～6 张，还要提前好几步规划。道具各能用一次。</p>`,
+    overlay(`<div class="big-emoji">🍖</div><h2>热身完成</h2><p>第二关：<br>自酿们准备迎接地狱难度吧<br>ᯠ_  ̫ _ᯄ  ੭</p>`,
       [{label:'挑战今日关卡',primary:true,onClick:()=>startLevel(1)}]);
   }else{
     const d=today();const first=!d.cleared;d.cleared=true;saveStore(store);
