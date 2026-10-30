@@ -1,0 +1,19 @@
+肉了个肉 · 今日通关人数（Cloudflare D1）
+
+1. 安装并登录：npm i -g wrangler && wrangler login
+2. 建数据库：wrangler d1 create rou-stats
+   把输出里的 database_id 填进 wrangler.toml
+3. 建表：wrangler d1 execute rou-stats --remote --file=schema.sql
+4. 部署：wrangler deploy
+   得到地址，例如 https://rou-stats.你的子域.workers.dev
+5. 打开 肉了个肉.html，把开头 CONFIG 里的
+      statsApi: null,
+   改成
+      statsApi: 'https://rou-stats.你的子域.workers.dev',
+
+说明
+- 同一台设备同一天只记一次通关；通关后弹窗会显示"你是今天第 N 位通关的娘娘"。
+- 首页、顶栏、通关弹窗会显示"今日已通关 N 位娘娘"，每分钟自动刷新一次。
+- 注意：claude.ai 上的在线版因为安全限制不能访问外部接口，会一直显示 --。
+  要让人数真正显示出来，需要把 肉了个肉.html 放到自己的网站上（比如 Cloudflare Pages），
+  或者直接在本地用浏览器打开。

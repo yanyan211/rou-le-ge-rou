@@ -1,0 +1,179 @@
+{
+ "levels": 31,
+ "failed": 14,
+ "legality": {
+  "countsOK": true,
+  "coverOK": true,
+  "pathOK": true,
+  "solverPathReplayOK": true
+ },
+ "total": {
+  "min": 195,
+  "median": 207,
+  "max": 240,
+  "mean": 211.839
+ },
+ "layers": {
+  "min": 10,
+  "median": 11,
+  "max": 12,
+  "mean": 11.194
+ },
+ "stack": {
+  "min": 15,
+  "median": 18,
+  "max": 20,
+  "mean": 17.677
+ },
+ "pathPeak": {
+  "min": 6,
+  "median": 6,
+  "max": 6,
+  "mean": 6
+ },
+ "pathMeanOcc": {
+  "min": 4.39,
+  "median": 4.63,
+  "max": 4.79,
+  "mean": 4.614
+ },
+ "mid5plus": {
+  "min": 0.511,
+  "median": 0.571,
+  "max": 0.63,
+  "mean": 0.572
+ },
+ "mid0to2": {
+  "min": 0,
+  "median": 0.032,
+  "max": 0.075,
+  "mean": 0.033
+ },
+ "tripleSpanMax": {
+  "min": 23,
+  "median": 37,
+  "max": 70,
+  "mean": 39.516
+ },
+ "longHeldTriples": {
+  "min": 4,
+  "median": 7,
+  "max": 12,
+  "mean": 7.484
+ },
+ "thirdDepthMean": {
+  "min": 4.84,
+  "median": 5.63,
+  "max": 6.47,
+  "mean": 5.608
+ },
+ "unlockDepthMax": {
+  "min": 14,
+  "median": 17,
+  "max": 19,
+  "mean": 16.677
+ },
+ "solverCap6Found": 30,
+ "solverCap6Nodes": {
+  "min": 488,
+  "median": 67106,
+  "max": 2490957,
+  "mean": 315064.833
+ },
+ "cap3found": 0,
+ "cap4found": 0,
+ "cap4exhausted": 0,
+ "cap5found": 25,
+ "cap5exhausted": 0,
+ "cap5Nodes": {
+  "min": 485,
+  "median": 107395,
+  "max": 2198788,
+  "mean": 287519.84
+ },
+ "strategies": {
+  "random": {
+   "wins": 0,
+   "runs": 6200,
+   "passRate": 0,
+   "avgRemovedFrac": 0.037
+  },
+  "triple": {
+   "wins": 0,
+   "runs": 6200,
+   "passRate": 0,
+   "avgRemovedFrac": 0.256
+  },
+  "top": {
+   "wins": 0,
+   "runs": 6200,
+   "passRate": 0,
+   "avgRemovedFrac": 0.037
+  },
+  "unlock": {
+   "wins": 0,
+   "runs": 6200,
+   "passRate": 0,
+   "avgRemovedFrac": 0.059
+  },
+  "greedy": {
+   "wins": 1,
+   "runs": 6200,
+   "passRate": 0.0002,
+   "avgRemovedFrac": 0.355
+  },
+  "fair2": {
+   "wins": 3,
+   "runs": 1240,
+   "passRate": 0.0024,
+   "avgRemovedFrac": 0.45
+  },
+  "fair3": {
+   "wins": 1,
+   "runs": 310,
+   "passRate": 0.0032,
+   "avgRemovedFrac": 0.538
+  },
+  "look2": {
+   "wins": 28,
+   "runs": 1240,
+   "passRate": 0.0226,
+   "avgRemovedFrac": 0.523
+  },
+  "look3": {
+   "wins": 41,
+   "runs": 310,
+   "passRate": 0.1323,
+   "avgRemovedFrac": 0.681
+  }
+ },
+ "traps": {
+  "avgOptions": {
+   "min": 9.8,
+   "median": 11.3,
+   "max": 13.3,
+   "mean": 11.371
+  },
+  "fatalOptionRate": {
+   "min": 0.105,
+   "median": 0.274,
+   "max": 0.379,
+   "mean": 0.272
+  },
+  "highRiskPoints": {
+   "min": 4,
+   "median": 8,
+   "max": 13,
+   "mean": 8.226
+  },
+  "baitMoves": 3517,
+  "fatalBaitMoves": 1030,
+  "tripleMoves": 1056,
+  "fatalTripleMoves": 1,
+  "unknown": 1032
+ },
+ "genSeconds": {
+  "mean": 60.4,
+  "max": "148.9"
+ }
+}

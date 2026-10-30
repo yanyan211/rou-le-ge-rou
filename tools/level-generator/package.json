@@ -1,0 +1,12 @@
+{
+  "name": "rou-le-ge-rou-level-generator",
+  "private": true,
+  "description": "肉了个肉 地狱关卡生成、求解与验证工具",
+  "scripts": {
+    "gen": "node pool.js 1000 1030 levels.jsonl",
+    "summary": "node summarize.js",
+    "inject": "node inject.js",
+    "test": "node testgame.js"
+  },
+  "devDependencies": { "playwright": "^1.47.0" }
+}
