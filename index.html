@@ -175,9 +175,9 @@ const CONFIG = {
   slotSize: 7,
   adSeconds: 15,   // 广告强制观看秒数
   adRevives: 1,    // 每局最多看几次广告复活（免费复活和移出道具用完之后才出现）
-  // 通关人数统计接口（Cloudflare Worker + D1）。填 Worker 地址，例如 'https://rou-stats.xxx.workers.dev'；
-  // 和游戏部署在同一个域名下时填 ''；留 null 则不联网，人数显示为 --
-  statsApi: 'https://rou-stats.13336038692.workers.dev',
+  // 通关人数统计接口（Cloudflare D1）。按顺序尝试：'' 表示和游戏同一个域名（Pages 的 _worker.js），
+  // 不通再试 Worker 地址；留 null 则不联网，人数显示为 --
+  statsApi: ['', 'https://rou-stats.13336038692.workers.dev'],
   firstIssueDate: '2026-10-30'   // 第 1 期的日期
 };
 const LEVELS = [
@@ -301,19 +301,27 @@ let clearCount=null;
 function uid(){try{let u=localStorage.getItem('rou-uid');if(!u){u=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('rou-uid',u)}return u}catch(e){return 'anon-'+Math.random().toString(36).slice(2)}}
 function clearsText(){return clearCount==null?'--':String(clearCount)}
 function paintClears(){document.querySelectorAll('[data-clears]').forEach(el=>el.textContent=clearsText())}
+// 依次尝试各个接口地址，记住第一个能用的
+let apiBase=null;
+function apiList(){const v=CONFIG.statsApi;if(v==null)return [];const l=Array.isArray(v)?v:[v];return apiBase!=null?[apiBase,...l.filter(x=>x!==apiBase)]:l}
+async function api(path,init){
+  for(const base of apiList()){
+    try{const r=await fetch(base+path,init);if(!r.ok)continue;const j=await r.json();if(j&&typeof j.cleared==='number'){apiBase=base;return j}}catch(e){}
+  }
+  return null;
+}
 async function refreshClears(){
-  if(CONFIG.statsApi==null)return paintClears();
-  try{const r=await fetch(`${CONFIG.statsApi}/api/stats?day=${todayKey()}`);const j=await r.json();
-    if(typeof j.cleared==='number')clearCount=j.cleared}catch(e){}
-  paintClears();
+  const j=await api(`/api/stats?day=${todayKey()}`);
+  if(j)clearCount=j.cleared;paintClears();
 }
 // 通关后上报；返回"你是今天第几位通关的"（同一台设备一天只算一次）
 async function reportClear(){
-  if(CONFIG.statsApi==null)return null;
-  try{const r=await fetch(`${CONFIG.statsApi}/api/clear`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({day:todayKey(),uid:uid()})});
-    const j=await r.json();if(typeof j.cleared==='number')clearCount=j.cleared;paintClears();return j.rank??null}catch(e){return null}
+  const j=await api('/api/clear',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({day:todayKey(),uid:uid()})});
+  if(!j)return null;clearCount=j.cleared;paintClears();return j.rank??null;
 }
-setInterval(refreshClears,60000);
+// 每 5 分钟刷新一次人数；页面在后台时不刷新，切回来时补刷
+setInterval(()=>{if(!document.hidden)refreshClears()},300000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshClears()});
 
 
 
