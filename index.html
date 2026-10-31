@@ -412,10 +412,19 @@ function startLevel(li){
 
 function isFree(t){
   if(t.state!=='field')return false;
+  if(t.zone==='hold')return true;   // 移出区的牌互相不遮挡，露出的部分都能点
   for(const o of G.tiles)if(o!==t&&o.state==='field'&&o.z>t.z&&overlaps(o,t))return false;
   return true;
 }
+// 移出区：所有牌排成一排居中；超过 3 张时微微交错叠放（后移出的压在上面），每张都露出大部分
+function layoutHold(){
+  const h=G.tiles.filter(t=>t.state==='field'&&t.zone==='hold').sort((a,b)=>a.holdOrder-b.holdOrder);
+  if(!h.length)return;
+  const n=h.length,step=n<=3?TW:Math.min(38,(316-TW)/(n-1)),w=TW+step*(n-1),x0=Math.round(180-w/2);
+  h.forEach((t,i)=>{t.x=Math.round(x0+i*step);t.y=540;t.z=i});
+}
 function render(){
+  layoutHold();
   for(const t of G.tiles){
     if(t.state==='gone')continue;
     const s=t.el.style;
@@ -454,7 +463,7 @@ function onTile(t){
 
 function moveOut(){
   const take=G.slot.slice(0,3);
-  take.forEach((t,i)=>{t.state='field';t.zone='hold';t.x=111+i*TW;t.y=540;t.z=G.hold*10+i});
+  take.forEach((t,i)=>{t.state='field';t.zone='hold';t.holdOrder=G.hold*10+i});
   G.hold++;G.slot=G.slot.slice(take.length);
   render();
 }
