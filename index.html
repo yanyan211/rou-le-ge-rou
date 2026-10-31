@@ -134,6 +134,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .ad-link{display:block;border-radius:50%;-webkit-tap-highlight-color:transparent}
 .ad-link:focus-visible{outline:3px solid var(--ad-ink);outline-offset:6px}
 .ad-hint{margin:-8px 0 0;font-size:13px;opacity:.75;text-align:center}
+.ad-hint a{color:var(--ad-ink);text-decoration:underline;text-underline-offset:3px;margin-left:8px}
 .ad-err{font-size:14px;opacity:.75}
 @media (prefers-reduced-motion:reduce){.ad-body .disc{animation-duration:40s}}
 @media (prefers-reduced-motion:reduce){.tile{transition:none}.tile.wiggle .face,.veil,.veil .card.show{animation:none}.tile.pop .face{animation-duration:.01s}}
@@ -161,7 +162,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <div class="ad-top"><span class="ad-tag">广告</span><button class="ad-close" id="adClose" type="button" disabled>15 秒后可关闭</button></div>
   <div class="ad-body" id="adBody"></div>
   <p class="ad-title" id="adTitle"></p>
-  <p class="ad-hint" id="adHint" hidden>点击封面收听完整版</p>
+  <p class="ad-hint" id="adHint" hidden></p>
 </div>
 
 <script>
@@ -330,6 +331,7 @@ const ICON='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADNCAYAAACGsf3hAA
 // ---------- 看广告复活 ----------
 // 广告清单放在 ads/ads.json，格式见 ads/说明.txt
 let ADS=[];
+const IN_WECHAT=/MicroMessenger/i.test(navigator.userAgent);
 fetch('ads/ads.json',{cache:'no-cache'}).then(r=>r.ok?r.json():[]).then(j=>{ADS=(Array.isArray(j)?j:(j.ads||[])).filter(a=>a&&a.src)}).catch(()=>{});
 function playAd(onDone){
   const ad=ADS[Math.floor(Math.random()*ADS.length)];
@@ -338,12 +340,18 @@ function playAd(onDone){
   let media;
   if(isVideo){media=document.createElement('video');media.setAttribute('playsinline','');media.playsInline=true;body.appendChild(media)}
   else{const img=document.createElement('img');img.className='disc';img.alt='';img.src=ad.cover||ICON;
-    if(ad.link){const a=document.createElement('a');a.className='ad-link';a.href=ad.link;a.target='_blank';a.rel='noopener';a.setAttribute('aria-label','打开歌曲链接');a.appendChild(img);body.appendChild(a)}
+    if(ad.link){const a=document.createElement('a');a.className='ad-link';a.href=ad.link;a.target='_blank';a.rel='noopener';
+      // 有 app 链接、且不在微信里：点封面直接唤起 QQ 音乐 App（微信内置浏览器会拦截唤起其他 App）
+      if(ad.app&&!IN_WECHAT)a.onclick=e=>{e.preventDefault();openAppOrWeb(ad.app,ad.link)};a.setAttribute('aria-label','打开歌曲链接');a.appendChild(img);body.appendChild(a)}
     else body.appendChild(img);media=document.createElement('audio');media.hidden=true;body.appendChild(media)}
   media.src=ad.src;media.loop=true;media.preload='auto';
   media.onerror=()=>{const e=document.createElement('p');e.className='ad-err';e.textContent='广告加载失败，倒计时结束后仍可复活';body.appendChild(e)};
   $('adTitle').textContent=ad.title||'';
-  $('adHint').hidden=!(ad.link&&!isVideo);
+  const hint=$('adHint');hint.hidden=!(ad.link&&!isVideo);hint.textContent='';
+  if(ad.link&&!isVideo){
+    if(ad.app&&!IN_WECHAT){hint.append('点击封面在 QQ 音乐 App 中打开');const w=document.createElement('a');w.href=ad.link;w.target='_blank';w.rel='noopener';w.textContent='没有 App？打开网页版';hint.append(w)}
+    else hint.append(IN_WECHAT&&ad.app?'点击封面收听完整版（想直接打开 App，请点右上角「…」选择在浏览器打开）':'点击封面收听完整版');
+  }
   $('ad').hidden=false;
   media.play().catch(()=>{});   // 在点击事件里直接播放，手机浏览器才允许带声音播放
   let left=CONFIG.adSeconds;const btn=$('adClose');btn.disabled=true;btn.textContent=`${left} 秒后可关闭`;
@@ -359,6 +367,11 @@ function playAd(onDone){
     media.pause();media.removeAttribute('src');try{media.load()}catch(e){}
     body.innerHTML='';$('ad').hidden=true;onDone();
   };
+}
+// 点封面：新开一个中转页（open.html）去唤起 App，没装 App 时中转页会自动改开网页版；游戏页保持不动
+function openAppOrWeb(app,web){
+  const w=window.open('open.html?app='+encodeURIComponent(app)+'&web='+encodeURIComponent(web),'_blank');
+  if(!w)window.open(web,'_blank');
 }
 function adRevive(){
   closeOverlay();
