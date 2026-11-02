@@ -4,7 +4,7 @@
 
 - 第 1 关：热身关
 - 第 2 关：地狱关，每天 0 点更新（关卡池里有 31 关，都经过求解器筛选和验证；用完后循环，循环时会重新映射图案）
-- 道具：移出 / 撤回 / 洗牌，各能用一次；满槽后可以复活一次
+- 道具：移出 / 撤回 / 洗牌，各能用一次；满槽后可以复活一次，之后还能看广告复活（广告放在 ads/）
 - 今日通关人数：需要接 Cloudflare D1（见下文）
 
 ## 部署到 GitHub Pages
@@ -37,6 +37,7 @@ statsApi: null,
 ```
 index.html                 游戏本体
 cloudflare/                通关人数接口（Worker + D1）
+ads/                       看广告复活用的广告（歌曲/视频 + ads.json 清单，见 ads/说明.txt）
 tools/level-generator/     地狱关卡生成器、求解器和验证脚本（Node.js）
   levels.jsonl             31 关的数据和每关的完整通关路径
   summary.json             难度与验证统计

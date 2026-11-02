@@ -4,5 +4,5 @@ compatibility_date = "2025-01-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "rou-stats"
-database_id = "把 wrangler d1 create 输出的 id 填在这里"
+database_name = "rou-le-ge-rou-db"
+database_id = "4f2a1862-0985-4fc4-a48a-db8845e86348"
