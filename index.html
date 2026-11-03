@@ -178,7 +178,7 @@ const CONFIG = {
   adRevives: 1,    // 每局最多看几次广告复活（免费复活和移出道具用完之后才出现）
   // 通关人数统计接口（Cloudflare D1）。按顺序尝试：'' 表示和游戏同一个域名（Pages 的 _worker.js），
   // 不通再试 Worker 地址；留 null 则不联网，人数显示为 --
-  statsApi: ['', 'https://rou-stats.13336038692.workers.dev'],
+  statsApi: ['https://api.cino1018.com', '', 'https://rou-stats.13336038692.workers.dev'],
   firstIssueDate: '2026-10-30'   // 第 1 期的日期
 };
 const LEVELS = [
